@@ -69,41 +69,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Money-Ledger-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk      - name: Install Capacitor
-        run: |
-          npm install @capacitor/core@8.5.1
-          npm install @capacitor/cli@8.5.1
-          npm install @capacitor/android@8.5.1
-          npm install @capacitor/app@8.5.1
-          npm install @capacitor/filesystem@8.5.1
-
-      - name: Create Capacitor config
-        run: |
-          cat > capacitor.config.json <<'EOF'
-          {
-            "appId": "com.htet11763.moneyledger",
-            "appName": "Money Ledger",
-            "webDir": "www"
-          }
-          EOF
-
-      - name: Check web app
-        run: |
-          test -f www/index.html
-          echo "www/index.html found"
-
-      - name: Create Android project
-        run: npx cap add android
-
-      - name: Sync Android project
-        run: npx cap sync android
-
-      - name: Build Debug APK
-        working-directory: android
-        run: ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Money-Ledger-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
