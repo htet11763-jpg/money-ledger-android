@@ -3,7 +3,8 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
@@ -17,12 +18,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
+
+      - name: Verify web app
+        run: |
+          test -f www/index.html
+          echo "Found www/index.html"
 
       - name: Create package.json
         run: |
@@ -30,15 +37,18 @@ jobs:
           {
             "name": "money-ledger-android",
             "version": "1.0.0",
-            "private": true
+            "private": true,
+            "dependencies": {
+              "@capacitor/core": "8.5.1",
+              "@capacitor/cli": "8.5.1",
+              "@capacitor/android": "8.5.1",
+              "@capacitor/app": "8.5.1"
+            }
           }
           EOF
 
-      - name: Install Capacitor
-        run: |
-          npm install @capacitor/core@8.5.1
-          npm install @capacitor/cli@8.5.1
-          npm install @capacitor/android@8.5.1
+      - name: Install dependencies
+        run: npm install
 
       - name: Create Capacitor config
         run: |
@@ -50,23 +60,19 @@ jobs:
           }
           EOF
 
-      - name: Check web app
-        run: |
-          test -f www/index.html
-          echo "www/index.html found"
-
       - name: Create Android project
         run: npx cap add android
 
-      - name: Sync Android project
+      - name: Sync Android
         run: npx cap sync android
 
-      - name: Build Debug APK
+      - name: Build APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Money-Ledger-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
